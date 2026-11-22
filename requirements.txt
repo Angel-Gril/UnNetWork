@@ -1,0 +1,4 @@
+# URnetwork 订阅工具链 依赖
+# 只用到标准库 + pyyaml；curl 需系统安装
+
+PyYAML>=6.0

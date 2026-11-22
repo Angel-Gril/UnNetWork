@@ -1,0 +1,109 @@
+# mihomo / Clash.Meta 配置样例
+#
+# 说明：
+#   1. type: socks5 是唯一推荐的形式（原生协议，冷启动 1-2 秒）
+#   2. udp 必须 false（服务端 relay 是容器内网地址，外部不可达）
+#   3. 节点头部是 auth_token，不带密码
+#   4. url-test 的 timeout 设 10000（默认 5000 太短，会误判慢节点）
+
+mixed-port: 7890
+allow-lan: true
+mode: rule
+log-level: info
+ipv6: false
+
+proxies:
+  - name: "US-01-120ms-198.51.100.11"
+    type: socks5
+    server: fireside.bringyour.com
+    port: 7141
+    username: "<AUTH_TOKEN_US_01>"
+    password: ""
+    udp: false
+  - name: "US-02-340ms-198.51.100.12"
+    type: socks5
+    server: crisp.bringyour.com
+    port: 7129
+    username: "<AUTH_TOKEN_US_02>"
+    password: ""
+    udp: false
+  - name: "CA-01-180ms-198.51.100.21"
+    type: socks5
+    server: fireside.bringyour.com
+    port: 7165
+    username: "<AUTH_TOKEN_CA_01>"
+    password: ""
+    udp: false
+
+# https 代理的正确写法（注意 type 仍是 http）
+#  - name: "US-03-https"
+#    type: http
+#    server: crisp.bringyour.com
+#    port: 7143
+#    username: "<auth_token>"
+#    password: ""
+#    tls: true
+#    skip-cert-verify: false
+#    udp: false
+
+proxy-groups:
+  # 主选择器
+  - name: 节点选择
+    type: select
+    proxies: [自动选择, 故障转移, 美国节点, 加拿大节点, DIRECT, US-01-120ms-198.51.100.11, US-02-340ms-198.51.100.12, CA-01-180ms-198.51.100.21]
+
+  # 自动测速（timeout 放宽到 10 秒）
+  - name: 自动选择
+    type: url-test
+    url: http://www.gstatic.com/generate_204
+    interval: 300
+    tolerance: 100
+    timeout: 10000
+    lazy: true
+    proxies: [US-01-120ms-198.51.100.11, US-02-340ms-198.51.100.12, CA-01-180ms-198.51.100.21]
+
+  # 故障转移（按顺序试）
+  - name: 故障转移
+    type: fallback
+    url: http://www.gstatic.com/generate_204
+    interval: 300
+    lazy: true
+    proxies: [US-01-120ms-198.51.100.11, US-02-340ms-198.51.100.12, CA-01-180ms-198.51.100.21]
+
+  # 按国家分组（节点名必须以 US- / CA- 开头，满足 \bCC\b 词边界）
+  - name: 美国节点
+    type: url-test
+    url: http://www.gstatic.com/generate_204
+    interval: 300
+    timeout: 10000
+    lazy: true
+    proxies: [US-01-120ms-198.51.100.11, US-02-340ms-198.51.100.12]
+
+  - name: 加拿大节点
+    type: url-test
+    url: http://www.gstatic.com/generate_204
+    interval: 300
+    timeout: 10000
+    lazy: true
+    proxies: [CA-01-180ms-198.51.100.21]
+
+  - name: AI服务
+    type: select
+    proxies: [节点选择, 美国节点, DIRECT]
+
+  - name: 漏网之鱼
+    type: select
+    proxies: [节点选择, 自动选择, 故障转移, DIRECT]
+
+rules:
+  - GEOSITE,private,DIRECT
+  - GEOIP,private,DIRECT,no-resolve
+  - GEOSITE,category-ads-all,REJECT
+  - GEOSITE,openai,AI服务
+  - GEOSITE,telegram,节点选择
+  - GEOSITE,youtube,节点选择
+  - GEOSITE,netflix,节点选择
+  - GEOSITE,geolocation-!cn,节点选择
+  - GEOSITE,cn,DIRECT
+  - GEOIP,CN,DIRECT,no-resolve
+  - MATCH,漏网之鱼

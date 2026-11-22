@@ -1,0 +1,56 @@
+# systemd 单元样例
+#
+# 用法：
+#   sudo cp ur-refresh.service /etc/systemd/system/
+#   sudo cp ur-refresh.timer   /etc/systemd/system/
+#   sudo systemctl daemon-reload
+#   sudo systemctl enable --now ur-refresh.timer
+
+# ────────────────────────────────────────────────────────────
+# ur-refresh.service —— 独立运行（不经过 Node 订阅服务）
+# ────────────────────────────────────────────────────────────
+# 若要集成到 Node 订阅服务，改用
+# private-subscription-refresh@.service 模板单元，
+# 由 Node 的 refresh-provider.mjs 调 wrapper。
+# ────────────────────────────────────────────────────────────
+
+[Unit]
+Description=URnetwork residential proxy refresh
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=oneshot
+User=subsvc
+Group=subsvc
+WorkingDirectory=/opt/ur-sub
+
+Environment=PARALLEL=8
+Environment=PROTOCOL=socks5
+Environment=MAX_PROBE_MS=25000
+Environment=MAX_PER_KEY=5
+Environment=MAX_ROUNDS=3
+Environment=DEDUP_PER_IP=3
+
+ExecStart=/opt/ur-sub/ur-refresh-run.sh
+
+# 单轮 165 槽位约 1-2 分钟，留足余量
+TimeoutStartSec=3600
+
+# ── 加固 ──
+NoNewPrivileges=true
+PrivateTmp=true
+ProtectSystem=strict
+ProtectHome=true
+ProtectKernelTunables=true
+ProtectKernelModules=true
+ProtectControlGroups=true
+
+# ⚠️ 必须包含所有需要写的路径，否则报 Read-only file system
+ReadWritePaths=/opt/ur-sub \
+                /var/lib/private-subscription/cache \
+                /var/lib/private-subscription/logs \
+                /var/www/ur
+
+StandardOutput=append:/var/lib/private-subscription/logs/scan.log
+StandardError=append:/var/lib/private-subscription/logs/scan.log

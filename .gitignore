@@ -1,0 +1,40 @@
+# ── 凭据（绝对不要提交）──
+keys.txt
+guests-seeds.txt
+emails.json
+*.pem
+.env
+service.env
+
+# ── 产物 ──
+sub/
+sub-*/
+runtime/
+inventory.json
+mihomo.yaml
+singbox.json
+nodes.txt
+subscription.txt
+sub.txt
+state.json
+report.md
+
+# ── 日志 ──
+*.log
+logs/
+
+# ── Python ──
+__pycache__/
+*.py[cod]
+*.bak-*
+.venv/
+venv/
+
+# ── 编辑器 ──
+.vscode/
+.idea/
+*.swp
+
+# ── 系统 ──
+.DS_Store
+Thumbs.db
