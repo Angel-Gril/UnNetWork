@@ -258,21 +258,22 @@ src/
   ur_guest.py       Guest 铸造
   ur_ops.py         多账号编排
 tools/
+  check_secrets.py  pre-commit 凭据检查
+  check_config.py   部署后暴露面检查
   ur_probe_cn.py    国内可用性探针
   ur_udp_probe.py   UDP 测试
   validate.py       配置校验
   diag_config.py    分组语义检查
+  push_via_api.py   github.com:443 不可达时用 REST API 提交
 deploy/
   ur-refresh-run.sh            刷新包装（systemd 调用）
-  patch_urnetwork.py           接入 Node 订阅服务
-  fix_panel_perm.py            修面板服务沙箱权限
-  fix_apply_template.py        套用路由模板
 docs/
   integration.md               服务器集成完整方案
   architecture.md              数据流与设计取舍
 examples/
   mihomo.example.yaml          配置样例
   ur-refresh.service           systemd 单元样例
+  ur-refresh.timer             timer 样例
 ```
 
 ---
