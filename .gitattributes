@@ -1,0 +1,19 @@
+# 统一 LF，避免 Windows 检出后产生整文件差异
+* text=auto eol=lf
+
+# Shell 脚本必须是 LF，否则 Linux 上执行报 bad interpreter
+*.sh       text eol=lf
+
+# Python / 文档 / 配置
+*.py       text eol=lf
+*.md       text eol=lf
+*.yaml     text eol=lf
+*.yml      text eol=lf
+*.service  text eol=lf
+*.timer    text eol=lf
+*.txt      text eol=lf
+
+# 二进制
+*.png      binary
+*.jpg      binary
+*.zip      binary

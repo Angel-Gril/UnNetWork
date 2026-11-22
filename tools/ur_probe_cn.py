@@ -167,17 +167,15 @@ def main():
     t_ok = stats["https"][0]
 
     if t_ok > 0:
-        print("  ✅ HTTPS 代理可用！")
-        print("     → 不需要链式代理，客户端直接配 https 类型代理即可")
-        print("     → 建议：优先用 https，SOCKS5 作为备份")
+        print(f"  [判定] HTTPS 可达 {t_ok}/{stats['https'][1]}，可直连客户端")
+        print("  配置：type: http + tls: true + https 端口")
     elif h_ok > 0 or s_ok > 0:
-        print("  ⚠️ 只有明文协议能用，HTTPS 不行")
-        print("     → 说明是端口/ALPN 特征被识别，不是域名问题")
-        print("     → 建议：上 REALITY 链式（port 443 伪装）")
+        print(f"  [判定] 仅明文协议可达（http {h_ok}/{stats['http'][1]}，socks5 {s_ok}/{stats['socks5'][1]}）")
+        print("  配置：用 SOCKS5 或 http，避开 https 端口")
     else:
-        print("  ❌ 三种协议全部不通")
-        print("     → 域名或 IP 段被阻断，或网络环境本身限制")
-        print("     → 必须上链式代理，且 VPS 要在境外")
+        print("  [判定] 三协议均不可达")
+        print("  原因：域名/IP 段阻断，或本机网络限制")
+        print("  方案：经境外 VPS 中转（REALITY 入站 + SOCKS5 出站）")
 
 
 if __name__ == "__main__":

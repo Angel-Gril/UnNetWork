@@ -406,7 +406,7 @@ def main():
         recs = recs[: args.limit]
 
     print(f"本次处理 {len(recs)}，并发 {args.workers}")
-    print(f"注意：注册接口有 IP 级限流，无代理时每 5 分钟约 1-2 个\n")
+    print(f"[限流] 实测无代理时约 1-2 个/5min（IP 级配额）\n")
 
     ok, failed = 0, []
     results = list(existing)

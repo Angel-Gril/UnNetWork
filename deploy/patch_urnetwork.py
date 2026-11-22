@@ -158,7 +158,7 @@ def main():
         if not os.path.exists(p):
             sys.exit(f"找不到 {p}")
     if not os.path.exists(WRAPPER):
-        print(f"  警告：wrapper 不存在 {WRAPPER}（刷新会失败，但分发不受影响）")
+        print(f"  [preflight] wrapper 缺失: {WRAPPER}（刷新功能不可用，分发正常）")
 
     print("=== 打补丁 ===")
     ok1 = patch_providers()

@@ -210,21 +210,18 @@ def main():
             if r["udp_supported"] and r["relay"]:
                 ok, detail = udp_dns_test(r["relay"])
                 print(f"\n通过 relay 发 DNS 查询: {'✅ 有响应' if ok else '❌ 无响应'}  ({detail})")
-                print("  注意：relay 地址若为 0.0.0.0，表示用控制连接的同一主机，")
-                print("        部分实现需要把 UDP 发到代理的同一个 IP。")
+                print("  relay 为 0.0.0.0 时，UDP 应发往控制连接的主机地址。")
 
     print("\n=== 结论 ===")
     if udp_ok == len(targets) and udp_ok > 0:
-        print("  ✅ SOCKS5 支持 UDP ASSOCIATE")
-        print("     → mihomo/sing-box 的 socks5 outbound 可以开 udp: true")
-        print("     → 能转发 DNS/QUIC/游戏流量，不只是 TCP")
+        print(f"  [判定] UDP ASSOCIATE 被接受 {udp_ok}/{len(targets)}")
+        print("  还需验证 relay 可达：私有地址（10./172./192.168.）外部无法直连")
     elif udp_ok > 0:
-        print("  ⚠️ 部分节点支持 UDP，不稳定")
-        print("     → 建议在客户端保持 udp: false，避免连接卡顿")
+        print(f"  [判定] UDP 支持不一致 {udp_ok}/{len(targets)}")
+        print("  配置：udp: false")
     else:
-        print("  ❌ 不支持 UDP ASSOCIATE")
-        print("     → 只能用 TCP over SOCKS5")
-        print("     → 客户端必须设 udp: false，否则某些应用会卡住")
+        print("  [判定] 不支持 UDP ASSOCIATE")
+        print("  配置：udp: false，仅 TCP over SOCKS5")
 
 
 if __name__ == "__main__":

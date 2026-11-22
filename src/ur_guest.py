@@ -27,7 +27,7 @@ ur_guest.py —— Guest 模式批量铸造（无需邮箱、无需验证码）
 为什么这条路可行
 ----------------
 邮箱注册路径（network-create 带 user_auth+password）会进入 verification_required，
-必须收验证码；而服务端的邮件发送有严格的配额窗口，实测窗口很窄。
+需要收验证码；服务端邮件发送有配额窗口，实测有效窗口较窄。
 Guest 模式走的是 `guest_mode: true`，服务端直接建网络并返回 jwt + seedphrase，
 **完全不触发邮件**，因此不受任何配额限制。
 
