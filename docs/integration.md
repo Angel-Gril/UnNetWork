@@ -71,7 +71,7 @@ sudo -u subsvc tee -a /opt/ur-sub/keys.txt < keys.txt
 
 ### 2.3 日志目录
 
-**放在 `/var/lib` 下**，因为 systemd 沙箱只允许写白名单路径：
+日志放 `/var/lib` 下——systemd 沙箱只允许写白名单路径：
 
 ```bash
 sudo mkdir -p /var/lib/private-subscription/logs
@@ -243,7 +243,7 @@ timer 只是每 5 分钟问一次"该不该刷"。
 
 避开另外三家的分钟位（`:00` / `:01` / `:02`），用 `:03`。
 
-### 4.3 ⚠️ 面板服务的沙箱（最容易踩的坑）
+### 4.3 面板服务的沙箱
 
 **面板的 Refresh 按钮**走的是 `private-subscription.service` 里的
 `triggerRefresh()` → `spawn()`，**子进程继承父服务的沙箱**。
@@ -285,8 +285,8 @@ location /ur/ {
 
 `ur-refresh-run.sh` 只往这里复制 `report.md` 和 `state.json`。
 
-**绝对不要**把 `mihomo.yaml` / `nodes.txt` 放进来——它们含 `auth_token`，
-等同代理凭据。含凭据的配置只走 `/s/<token>/` 鉴权通道。
+`mihomo.yaml` / `nodes.txt` 含 `auth_token`，不放进静态目录。
+含凭据的配置只走 `/s/<token>/` 鉴权通道，用 `tools/check_config.py` 事后核查。
 
 ---
 

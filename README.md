@@ -3,9 +3,6 @@
 把 [URnetwork](https://urnetwork.com) 的免费住宅代理导出成标准 **mihomo / sing-box** 订阅，
 并接入自建的多机场聚合服务。
 
-> **免责声明**：本项目仅用于个人学习与网络协议研究。使用前请自行确认符合
-> URnetwork 的服务条款及所在地区的法律法规。作者不对任何使用后果负责。
-
 ---
 
 ## 这是什么
@@ -217,8 +214,6 @@ python tools/diag_config.py sub/mihomo.yaml
 | `ur_ops.py` | 多 key 编排，按国家分类 |
 | `ur_oneshot.py` | 单 key 快速导出 |
 
-> Guest 模式生成的 24 词助记词是唯一恢复凭据，务必保存。
-
 ---
 
 ## 集成到私有订阅服务
@@ -282,13 +277,44 @@ examples/
 
 ---
 
-## 安全提醒
+## 凭据边界
 
-- `keys.txt` 里的 API key 等同账号凭据，**不要提交到 git**
-- 生成的配置含 `auth_token`，等同代理凭据，只通过鉴权通道分发
-- Guest 模式的 24 词助记词是唯一恢复凭据
+三类数据属于凭据，不进仓库、不进公开目录：
 
-`.gitignore` 已排除 `keys.txt`、`*.yaml` 产物、日志等。
+| 数据 | 位置 | 约束 | 检查方式 |
+|---|---|---|---|
+| API key (`urn_*`) | `keys.txt` | 模式 600，`.gitignore` 排除 | `tools/check_secrets.py` |
+| 代理凭据 (`auth_token`) | `cache/*.yaml` | 只经 `/s/<token>/` 分发，不进静态目录 | `tools/check_config.py` |
+| 助记词 | 由 `ur_guest.py` 输出 | 无备份即不可恢复 | — |
+
+### 落地方式
+
+**pre-commit hook**（拦截提交）：
+
+```bash
+cp tools/check_secrets.py .git/hooks/pre-commit
+chmod +x .git/hooks/pre-commit
+```
+
+检测 `urn_*`、`06GV*`、GitHub PAT、PEM 私钥、硬编码密码，
+命中则中断提交并列出文件行号。
+
+**部署后检查**（拦截暴露）：
+
+```bash
+python tools/check_config.py --public-dir /var/www/ur --key-dir /opt/ur-sub
+```
+
+检查三件事：
+
+- 公开目录里是否存在含 `auth_token` 的文件
+- `keys.txt` 等凭据文件权限是否为 600
+- `.bak-*` 备份是否残留凭据
+
+退出码非 0 表示存在暴露面。
+
+**分发通道**：含 `auth_token` 的配置只通过 `/s/<token>/` 下发，
+静态目录 `/ur/` 只放 `report.md` 和 `state.json`（无凭据）。
 
 ---
 

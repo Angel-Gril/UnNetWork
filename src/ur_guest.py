@@ -18,7 +18,7 @@ ur_guest.py —— Guest 模式批量铸造（无需邮箱、无需验证码）
     }
     → 200 {
         "network": {"by_jwt": "...", "network_id": "...", "network_name": "..."},
-        "seedphrase": "24 个单词"      ← 恢复凭据，务必备份
+        "seedphrase": "24 个单词"      ← 唯一恢复凭据，丢失即无法找回账号
       }
 
     POST /account/api-key {"name": "..."}   (Bearer by_jwt)
@@ -204,13 +204,21 @@ def main():
     print("\n" + "=" * 56)
     print("成功 %d / 失败 %d / 目标 %d，耗时 %.0fs（%.1fs/个）" % (
         ok, fail, need, el, el / max(need, 1)))
+    seeds = os.path.splitext(args.out)[0] + "-seeds.txt"
     print("\n产出:")
     print("  %s            完整记录（含 seedphrase、jwt）" % args.out)
     print("  %s  纯 key 列表（喂 ur_hunt.py --jwt-file）" %
           (os.path.splitext(args.out)[0] + ".txt"))
-    print("  %s  网络名/密钥/助记词对照" %
-          (os.path.splitext(args.out)[0] + "-seeds.txt"))
-    print("\n注意：seedphrase 是唯一恢复凭据，务必另行备份。")
+    print("  %s  网络名/密钥/助记词对照" % seeds)
+
+    # seedphrase 是账号的唯一恢复路径：丢失后无法重新登录，
+    # 只能靠 api_key 继续用到失效。这里检查它是否已落盘。
+    if os.path.exists(seeds):
+        mode = oct(os.stat(seeds).st_mode & 0o777)
+        print("\n  助记词文件: %s (权限 %s)" % (seeds, mode))
+        if os.stat(seeds).st_mode & 0o077:
+            os.chmod(seeds, 0o600)
+            print("  已收紧权限至 600")
 
 
 if __name__ == "__main__":
